@@ -1,0 +1,363 @@
+parameter (or (or (pair %add_items (string %id) (map %products string (map string string))) (address %change_manager)) (or (string %register_lookup) (map %update_certifiers string address)));
+storage   (pair (pair (map %certifiers string address) (address %manager)) (pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare)));
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    IF_LEFT
+      {
+        IF_LEFT
+          {
+            SWAP;       # @storage : @parameter%add_items
+            # == add_items ==
+            # sp.verify(self.data.certifiers.contains(params.id), message = 'Certifier with ID non-existent') # @storage : @parameter%add_items
+            DUP;        # @storage : @storage : @parameter%add_items
+            DUG 2;      # @storage : @parameter%add_items : @storage
+            CAAR;       # map string address : @parameter%add_items : @storage
+            SWAP;       # @parameter%add_items : map string address : @storage
+            DUP;        # @parameter%add_items : @parameter%add_items : map string address : @storage
+            DUG 2;      # @parameter%add_items : map string address : @parameter%add_items : @storage
+            CAR;        # string : map string address : @parameter%add_items : @storage
+            MEM;        # bool : @parameter%add_items : @storage
+            IF
+              {}
+              {
+                PUSH string "Certifier with ID non-existent"; # string : @parameter%add_items : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%add_items : @storage
+            SWAP;       # @storage : @parameter%add_items
+            # sp.verify(sp.pack(sp.set_type_expr(sp.sender, sp.TAddress)) == sp.pack(sp.set_type_expr(self.data.certifiers[params.id], sp.TAddress)), message = 'This account may be expired, use different account.') # @storage : @parameter%add_items
+            DUP;        # @storage : @storage : @parameter%add_items
+            DUG 2;      # @storage : @parameter%add_items : @storage
+            CAAR;       # map string address : @parameter%add_items : @storage
+            SWAP;       # @parameter%add_items : map string address : @storage
+            DUP;        # @parameter%add_items : @parameter%add_items : map string address : @storage
+            DUG 2;      # @parameter%add_items : map string address : @parameter%add_items : @storage
+            CAR;        # string : map string address : @parameter%add_items : @storage
+            GET;        # option address : @parameter%add_items : @storage
+            IF_SOME
+              {
+                # of_some: Get-item:32 # @some : @parameter%add_items : @storage
+              }
+              {
+                PUSH int 32; # int : @parameter%add_items : @storage
+                FAILWITH;   # FAILED
+              }; # @some : @parameter%add_items : @storage
+            PACK;       # bytes : @parameter%add_items : @storage
+            SENDER;     # address : bytes : @parameter%add_items : @storage
+            PACK;       # bytes : bytes : @parameter%add_items : @storage
+            COMPARE;    # int : @parameter%add_items : @storage
+            EQ;         # bool : @parameter%add_items : @storage
+            IF
+              {}
+              {
+                PUSH string "This account may be expired, use different account."; # string : @parameter%add_items : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%add_items : @storage
+            # for product in params.products.items(): ... # @parameter%add_items : @storage
+            DUP;        # @parameter%add_items : @parameter%add_items : @storage
+            CDR;        # map string (map string string) : @parameter%add_items : @storage
+            ITER
+              {
+                # if self.data.products.contains(product.key): # pair string (map string string) : @parameter%add_items : @storage
+                DIG 2;      # @storage : pair string (map string string) : @parameter%add_items
+                DUP;        # @storage : @storage : pair string (map string string) : @parameter%add_items
+                DUG 3;      # @storage : pair string (map string string) : @parameter%add_items : @storage
+                CDAR;       # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : pair string (map string string) : @parameter%add_items : @storage
+                SWAP;       # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @parameter%add_items : @storage
+                DUP;        # pair string (map string string) : pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @parameter%add_items : @storage
+                DUG 2;      # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : pair string (map string string) : @parameter%add_items : @storage
+                CAR;        # string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : pair string (map string string) : @parameter%add_items : @storage
+                MEM;        # bool : pair string (map string string) : @parameter%add_items : @storage
+                IF
+                  {
+                    # sp.verify(sp.pack(sp.set_type_expr(params.id, sp.TString)) == sp.pack(sp.set_type_expr(self.data.products[product.key].certifier, sp.TString)), message = 'This product has already been registered by another certifier institution.') # pair string (map string string) : @parameter%add_items : @storage
+                    DIG 2;      # @storage : pair string (map string string) : @parameter%add_items
+                    DUP;        # @storage : @storage : pair string (map string string) : @parameter%add_items
+                    DUG 3;      # @storage : pair string (map string string) : @parameter%add_items : @storage
+                    CDAR;       # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : pair string (map string string) : @parameter%add_items : @storage
+                    SWAP;       # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @parameter%add_items : @storage
+                    DUP;        # pair string (map string string) : pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @parameter%add_items : @storage
+                    DUG 2;      # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : pair string (map string string) : @parameter%add_items : @storage
+                    CAR;        # string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : pair string (map string string) : @parameter%add_items : @storage
+                    GET;        # option (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : pair string (map string string) : @parameter%add_items : @storage
+                    IF_SOME
+                      {
+                        # of_some: Get-item:36 # @some : pair string (map string string) : @parameter%add_items : @storage
+                      }
+                      {
+                        PUSH int 36; # int : pair string (map string string) : @parameter%add_items : @storage
+                        FAILWITH;   # FAILED
+                      }; # @some : pair string (map string string) : @parameter%add_items : @storage
+                    CAR;        # string : pair string (map string string) : @parameter%add_items : @storage
+                    PACK;       # bytes : pair string (map string string) : @parameter%add_items : @storage
+                    DIG 2;      # @parameter%add_items : bytes : pair string (map string string) : @storage
+                    DUP;        # @parameter%add_items : @parameter%add_items : bytes : pair string (map string string) : @storage
+                    DUG 3;      # @parameter%add_items : bytes : pair string (map string string) : @parameter%add_items : @storage
+                    CAR;        # string : bytes : pair string (map string string) : @parameter%add_items : @storage
+                    PACK;       # bytes : bytes : pair string (map string string) : @parameter%add_items : @storage
+                    COMPARE;    # int : pair string (map string string) : @parameter%add_items : @storage
+                    EQ;         # bool : pair string (map string string) : @parameter%add_items : @storage
+                    IF
+                      {}
+                      {
+                        PUSH string "This product has already been registered by another certifier institution."; # string : pair string (map string string) : @parameter%add_items : @storage
+                        FAILWITH;   # FAILED
+                      }; # pair string (map string string) : @parameter%add_items : @storage
+                    # self.data.products[product.key].metahash.push(product.value) # pair string (map string string) : @parameter%add_items : @storage
+                    DIG 2;      # @storage : pair string (map string string) : @parameter%add_items
+                    DUP;        # @storage : @storage : pair string (map string string) : @parameter%add_items
+                    DUG 3;      # @storage : pair string (map string string) : @parameter%add_items : @storage
+                    DUP;        # @storage : @storage : pair string (map string string) : @parameter%add_items : @storage
+                    CAR;        # pair (map %certifiers string address) (address %manager) : @storage : pair string (map string string) : @parameter%add_items : @storage
+                    SWAP;       # @storage : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    CDR;        # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    DUP;        # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    CDR;        # address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    SWAP;       # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    CAR;        # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    DUP;        # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    DIG 4;      # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items : @storage
+                    DUP;        # pair string (map string string) : pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items : @storage
+                    DUG 5;      # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    CAR;        # string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    DUP;        # string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    DUG 2;      # string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    GET;        # option (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    IF_SOME
+                      {}
+                      {
+                        PUSH int 37; # int : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                        FAILWITH;   # FAILED
+                      }; # @some : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    DUP;        # @some : @some : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    CAR;        # string : @some : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    SWAP;       # @some : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    CDAR;       # nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items : @storage
+                    DIG 8;      # @storage : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    CDAR;       # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    DIG 7;      # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    DUP;        # pair string (map string string) : pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    DUG 8;      # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    CAR;        # string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    GET;        # option (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    IF_SOME
+                      {
+                        # of_some: Get-item:37 # @some : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                      }
+                      {
+                        PUSH int 37; # int : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                        FAILWITH;   # FAILED
+                      }; # @some : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    CDDR;       # list (map string string) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    DIG 7;      # pair string (map string string) : list (map string string) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    CDR;        # map string string : list (map string string) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    CONS;       # list (map string string) : nat : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    SWAP;       # nat : list (map string string) : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    PAIR;       # pair nat (list (map string string)) : string : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    SWAP;       # string : pair nat (list (map string string)) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    PAIR;       # pair string (pair nat (list (map string string))) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    SOME;       # option (pair string (pair nat (list (map string string)))) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    SWAP;       # string : option (pair string (pair nat (list (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    UPDATE;     # big_map string (pair string (pair nat (list (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    PAIR;       # pair (big_map string (pair string (pair nat (list (map string string))))) address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    SWAP;       # pair (map %certifiers string address) (address %manager) : pair (big_map string (pair string (pair nat (list (map string string))))) address : @parameter%add_items
+                    PAIR;       # pair (pair (map %certifiers string address) (address %manager)) (pair (big_map string (pair string (pair nat (list (map string string))))) address) : @parameter%add_items
+                    SWAP;       # @parameter%add_items : pair (pair (map %certifiers string address) (address %manager)) (pair (big_map string (pair string (pair nat (list (map string string))))) address)
+                  }
+                  {
+                    # self.data.products[product.key] = sp.record(certifier = params.id, lookups = 0, metahash = sp.list([product.value])) # pair string (map string string) : @parameter%add_items : @storage
+                    DIG 2;      # @storage : pair string (map string string) : @parameter%add_items
+                    DUP;        # @storage : @storage : pair string (map string string) : @parameter%add_items
+                    CAR;        # pair (map %certifiers string address) (address %manager) : @storage : pair string (map string string) : @parameter%add_items
+                    SWAP;       # @storage : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    CDR;        # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    DUP;        # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    CDR;        # address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    SWAP;       # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    CAR;        # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    DIG 3;      # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    DUP;        # pair string (map string string) : pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    DUG 4;      # pair string (map string string) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    CAR;        # string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    NIL (map string string); # list (map string string) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : pair string (map string string) : @parameter%add_items
+                    DIG 5;      # pair string (map string string) : list (map string string) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    CDR;        # map string string : list (map string string) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    CONS;       # list (map string string) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    PUSH nat 0; # nat : list (map string string) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    PAIR %lookups %metahash; # pair (nat %lookups) (list %metahash (map string string)) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    DIG 5;      # @parameter%add_items : pair (nat %lookups) (list %metahash (map string string)) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+                    DUP;        # @parameter%add_items : @parameter%add_items : pair (nat %lookups) (list %metahash (map string string)) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+                    DUG 6;      # @parameter%add_items : pair (nat %lookups) (list %metahash (map string string)) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    CAR;        # string : pair (nat %lookups) (list %metahash (map string string)) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    PAIR %certifier; # pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    SOME;       # option (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : string : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    SWAP;       # string : option (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    UPDATE;     # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    PAIR;       # pair (big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) address : pair (map %certifiers string address) (address %manager) : @parameter%add_items
+                    SWAP;       # pair (map %certifiers string address) (address %manager) : pair (big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) address : @parameter%add_items
+                    PAIR;       # pair (pair (map %certifiers string address) (address %manager)) (pair (big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) address) : @parameter%add_items
+                    SWAP;       # @parameter%add_items : pair (pair (map %certifiers string address) (address %manager)) (pair (big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) address)
+                  }; # @parameter%add_items : pair (pair (map %certifiers string address) (address %manager)) (pair (big_map string (pair string (pair nat (list (map string string))))) address)
+              }; # @parameter%add_items : @storage
+            DROP;       # @storage
+          }
+          {
+            SWAP;       # @storage : @parameter%change_manager
+            # == change_manager ==
+            # sp.verify(sp.pack(sp.set_type_expr(sp.sender, sp.TAddress)) == sp.pack(sp.set_type_expr(self.data.spare, sp.TAddress)), message = 'Unauthorized account. Only spare can peform this action.') # @storage : @parameter%change_manager
+            DUP;        # @storage : @storage : @parameter%change_manager
+            DUG 2;      # @storage : @parameter%change_manager : @storage
+            CDDR;       # address : @parameter%change_manager : @storage
+            PACK;       # bytes : @parameter%change_manager : @storage
+            SENDER;     # address : bytes : @parameter%change_manager : @storage
+            PACK;       # bytes : bytes : @parameter%change_manager : @storage
+            COMPARE;    # int : @parameter%change_manager : @storage
+            EQ;         # bool : @parameter%change_manager : @storage
+            IF
+              {}
+              {
+                PUSH string "Unauthorized account. Only spare can peform this action."; # string : @parameter%change_manager : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%change_manager : @storage
+            SWAP;       # @storage : @parameter%change_manager
+            # self.data.manager = params.manager # @storage : @parameter%change_manager
+            DUP;        # @storage : @storage : @parameter%change_manager
+            CDR;        # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @storage : @parameter%change_manager
+            SWAP;       # @storage : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%change_manager
+            CAAR;       # map string address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%change_manager
+            DIG 2;      # @parameter%change_manager : map string address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare)
+            SWAP;       # map string address : @parameter%change_manager : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare)
+            PAIR;       # pair (map string address) @parameter%change_manager : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare)
+            PAIR;       # pair (pair (map string address) @parameter%change_manager) (pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare))
+          }; # @storage
+      }
+      {
+        IF_LEFT
+          {
+            SWAP;       # @storage : @parameter%register_lookup
+            # == register_lookup ==
+            # sp.verify(sp.pack(sp.set_type_expr(sp.sender, sp.TAddress)) == sp.pack(sp.set_type_expr(self.data.manager, sp.TAddress)), message = 'Unauthorized account. Only manager can peform this action.') # @storage : @parameter%register_lookup
+            DUP;        # @storage : @storage : @parameter%register_lookup
+            DUG 2;      # @storage : @parameter%register_lookup : @storage
+            CADR;       # address : @parameter%register_lookup : @storage
+            PACK;       # bytes : @parameter%register_lookup : @storage
+            SENDER;     # address : bytes : @parameter%register_lookup : @storage
+            PACK;       # bytes : bytes : @parameter%register_lookup : @storage
+            COMPARE;    # int : @parameter%register_lookup : @storage
+            EQ;         # bool : @parameter%register_lookup : @storage
+            IF
+              {}
+              {
+                PUSH string "Unauthorized account. Only manager can peform this action."; # string : @parameter%register_lookup : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%register_lookup : @storage
+            SWAP;       # @storage : @parameter%register_lookup
+            # sp.verify(self.data.products.contains(params.itemHash), message = 'Item Does not exists') # @storage : @parameter%register_lookup
+            DUP;        # @storage : @storage : @parameter%register_lookup
+            DUG 2;      # @storage : @parameter%register_lookup : @storage
+            CDAR;       # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @parameter%register_lookup : @storage
+            SWAP;       # @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @storage
+            DUP;        # @parameter%register_lookup : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @storage
+            DUG 2;      # @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @parameter%register_lookup : @storage
+            MEM;        # bool : @parameter%register_lookup : @storage
+            IF
+              {}
+              {
+                PUSH string "Item Does not exists"; # string : @parameter%register_lookup : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%register_lookup : @storage
+            SWAP;       # @storage : @parameter%register_lookup
+            # self.data.products[params.itemHash].lookups += 1 # @storage : @parameter%register_lookup
+            DUP;        # @storage : @storage : @parameter%register_lookup
+            CAR;        # pair (map %certifiers string address) (address %manager) : @storage : @parameter%register_lookup
+            SWAP;       # @storage : pair (map %certifiers string address) (address %manager) : @parameter%register_lookup
+            CDR;        # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : @parameter%register_lookup
+            DUP;        # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : @parameter%register_lookup
+            CDR;        # address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair (map %certifiers string address) (address %manager) : @parameter%register_lookup
+            SWAP;       # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : address : pair (map %certifiers string address) (address %manager) : @parameter%register_lookup
+            CAR;        # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%register_lookup
+            DUP;        # big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager) : @parameter%register_lookup
+            DIG 4;      # @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            DUP;        # @parameter%register_lookup : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            DUG 2;      # @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            GET;        # option (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            IF_SOME
+              {}
+              {
+                PUSH int 47; # int : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+                FAILWITH;   # FAILED
+              }; # @some : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            DUP;        # @some : @some : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            CAR;        # string : @some : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            SWAP;       # @some : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            CDR;        # pair (nat %lookups) (list %metahash (map string string)) : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            DUP;        # pair (nat %lookups) (list %metahash (map string string)) : pair (nat %lookups) (list %metahash (map string string)) : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            CDR;        # list (map string string) : pair (nat %lookups) (list %metahash (map string string)) : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            SWAP;       # pair (nat %lookups) (list %metahash (map string string)) : list (map string string) : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            CAR;        # nat : list (map string string) : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            PUSH nat 1; # nat : nat : list (map string string) : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            ADD;        # nat : list (map string string) : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            PAIR;       # pair nat (list (map string string)) : string : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            SWAP;       # string : pair nat (list (map string string)) : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            PAIR;       # pair string (pair nat (list (map string string))) : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            SOME;       # option (pair string (pair nat (list (map string string)))) : @parameter%register_lookup : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            SWAP;       # @parameter%register_lookup : option (pair string (pair nat (list (map string string)))) : big_map string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            UPDATE;     # big_map string (pair string (pair nat (list (map string string)))) : address : pair (map %certifiers string address) (address %manager)
+            PAIR;       # pair (big_map string (pair string (pair nat (list (map string string))))) address : pair (map %certifiers string address) (address %manager)
+            SWAP;       # pair (map %certifiers string address) (address %manager) : pair (big_map string (pair string (pair nat (list (map string string))))) address
+            PAIR;       # pair (pair (map %certifiers string address) (address %manager)) (pair (big_map string (pair string (pair nat (list (map string string))))) address)
+          }
+          {
+            SWAP;       # @storage : @parameter%update_certifiers
+            # == update_certifiers ==
+            # sp.verify(sp.pack(sp.set_type_expr(sp.sender, sp.TAddress)) == sp.pack(sp.set_type_expr(self.data.manager, sp.TAddress)), message = 'Unauthorized account. Only manager can peform this action.') # @storage : @parameter%update_certifiers
+            DUP;        # @storage : @storage : @parameter%update_certifiers
+            DUG 2;      # @storage : @parameter%update_certifiers : @storage
+            CADR;       # address : @parameter%update_certifiers : @storage
+            PACK;       # bytes : @parameter%update_certifiers : @storage
+            SENDER;     # address : bytes : @parameter%update_certifiers : @storage
+            PACK;       # bytes : bytes : @parameter%update_certifiers : @storage
+            COMPARE;    # int : @parameter%update_certifiers : @storage
+            EQ;         # bool : @parameter%update_certifiers : @storage
+            IF
+              {}
+              {
+                PUSH string "Unauthorized account. Only manager can peform this action."; # string : @parameter%update_certifiers : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%update_certifiers : @storage
+            # for cert in params.certifiers.items(): ... # @parameter%update_certifiers : @storage
+            DUP;        # @parameter%update_certifiers : @parameter%update_certifiers : @storage
+            ITER
+              {
+                # self.data.certifiers[cert.key] = cert.value # pair string address : @parameter%update_certifiers : @storage
+                DIG 2;      # @storage : pair string address : @parameter%update_certifiers
+                DUP;        # @storage : @storage : pair string address : @parameter%update_certifiers
+                CDR;        # pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @storage : pair string address : @parameter%update_certifiers
+                SWAP;       # @storage : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair string address : @parameter%update_certifiers
+                CAR;        # pair (map %certifiers string address) (address %manager) : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair string address : @parameter%update_certifiers
+                DUP;        # pair (map %certifiers string address) (address %manager) : pair (map %certifiers string address) (address %manager) : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair string address : @parameter%update_certifiers
+                CDR;        # address : pair (map %certifiers string address) (address %manager) : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair string address : @parameter%update_certifiers
+                SWAP;       # pair (map %certifiers string address) (address %manager) : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair string address : @parameter%update_certifiers
+                CAR;        # map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair string address : @parameter%update_certifiers
+                DIG 3;      # pair string address : map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%update_certifiers
+                DUP;        # pair string address : pair string address : map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%update_certifiers
+                DUG 4;      # pair string address : map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair string address : @parameter%update_certifiers
+                CAR;        # string : map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : pair string address : @parameter%update_certifiers
+                DIG 4;      # pair string address : string : map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%update_certifiers
+                CDR;        # address : string : map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%update_certifiers
+                SOME;       # option address : string : map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%update_certifiers
+                SWAP;       # string : option address : map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%update_certifiers
+                UPDATE;     # map string address : address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%update_certifiers
+                PAIR;       # pair (map string address) address : pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare) : @parameter%update_certifiers
+                PAIR;       # pair (pair (map string address) address) (pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare)) : @parameter%update_certifiers
+                SWAP;       # @parameter%update_certifiers : pair (pair (map string address) address) (pair (big_map %products string (pair (string %certifier) (pair (nat %lookups) (list %metahash (map string string))))) (address %spare))
+              }; # @parameter%update_certifiers : @storage
+            DROP;       # @storage
+          }; # pair (pair (map %certifiers string address) (address %manager)) (pair (big_map string (pair string (pair nat (list (map string string))))) address)
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };
