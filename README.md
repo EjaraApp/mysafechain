@@ -4,9 +4,13 @@ Product registration and serialization on the Tezos blockchain.
 https://play.google.com/store/apps/details?id=com.ejara.mysafechain
 
 
-### about
+## About
 MySafeChain allows product manufacturers (medical products and other valued/important products) to generate and certify on the blockchain the unique codes of all items produced. Consumers can be able to verify the authenticity of the items purchased using the app. All this information is recorded, tracked, and verified using smart contracts on the Tezos blockchain.
-So the reason one tag is bad is that the code is not in our smart contract yet.
+
+So in the example below, the reason one tag is bad is that the code is not in our smart contract yet.
+
+###### Product codes are recorded through a specialized backoffice dashboard built for product producers and factories.
+###### They are able to record serail numbers of products into our backend infrastructure.
 
 ## Technoloy
 Our smart contract is written and deployed on the Tezos Blockchain using the SmartPy Library.
