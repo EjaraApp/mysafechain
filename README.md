@@ -10,9 +10,9 @@ MySafeChain allows product manufacturers (medical products and other valued/impo
 So in the example below, the reason one tag is bad is that the code is not in our smart contract yet.
 
 ##### Product codes are recorded through a specialized backoffice dashboard built for product producers and factories.
-##### They are able to record serail numbers of products into our backend infrastructure.
+##### They are able to record serial numbers of products into our backend infrastructure.
 
-## Technoloy
+## Technology
 Our smart contract is written and deployed on the Tezos Blockchain using the SmartPy Library.
 Endusers only need a mobile app to verify the existence of products stored on our smart contract.
 This is all coded on the blockchain to ensure immutability and data replication.
