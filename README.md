@@ -1,7 +1,7 @@
 # mysafechain
 Product registration and serialization on the Tezos blockchain.
 
-https://play.google.com/store/apps/details?id=com.ejara.mysafechain
+Download the APK file to test our demo app
 
 
 ## About
